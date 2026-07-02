@@ -1,0 +1,19 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Qualquer pessoa pode ler as notícias (é um app público).
+    // Só o robô (Admin SDK, via GitHub Actions) pode escrever — o Admin SDK ignora estas regras.
+    match /noticias/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Qualquer visitante pode se cadastrar para notificações (criar 1 token),
+    // mas ninguém pode ler, alterar ou apagar tokens de outras pessoas pelo app.
+    match /push_tokens/{tokenId} {
+      allow create: if true;
+      allow read, update, delete: if false;
+    }
+  }
+}
