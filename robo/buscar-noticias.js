@@ -21,13 +21,40 @@ function ehErroJaExiste(err) {
   return err.code === 6 || /ALREADY_EXISTS/i.test(err.message || '');
 }
 
+function extrairImagem(item) {
+  if (item.enclosure?.url) return item.enclosure.url;
+
+  const media = item['media:content'];
+  if (media) {
+    const m = Array.isArray(media) ? media[0] : media;
+    if (m?.$?.url) return m.$.url;
+  }
+
+  const thumb = item['media:thumbnail'];
+  if (thumb) {
+    const t = Array.isArray(thumb) ? thumb[0] : thumb;
+    if (t?.$?.url) return t.$.url;
+  }
+
+  const html = item['content:encoded'] || item.content || item.summary || '';
+  const match = html.match(/<img[^>]+src="([^">]+)"/i);
+  if (match) return match[1];
+
+  return null;
+}
+
 async function main() {
   const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
   admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
   const db = admin.firestore();
-  const parser = new Parser();
+  const parser = new Parser({
+    customFields: {
+      item: ['media:content', 'media:thumbnail', 'content:encoded'],
+    },
+  });
 
   const novas = [];
+  let backfilled = 0;
 
   for (const feed of FEEDS) {
     let resultado;
@@ -42,13 +69,14 @@ async function main() {
       const link = item.link;
       if (!link) continue;
       const ref = db.collection('noticias').doc(idParaLink(link));
+      const imagem = extrairImagem(item);
 
       try {
         await ref.create({
           titulo: item.title || '(sem título)',
           resumo: (item.contentSnippet || item.summary || '').slice(0, 300),
           link,
-          imagem: item.enclosure?.url || null,
+          imagem,
           fonte: feed.nome,
           publicadoEm: item.isoDate ? new Date(item.isoDate) : admin.firestore.FieldValue.serverTimestamp(),
           criadoEm: admin.firestore.FieldValue.serverTimestamp(),
@@ -57,12 +85,21 @@ async function main() {
       } catch (err) {
         if (!ehErroJaExiste(err)) {
           console.error(`Erro ao salvar "${item.title}":`, err.message);
+          continue;
+        }
+        // Já existe: se antes não tinha imagem e agora o feed traz uma, completa o registro.
+        if (imagem) {
+          const atual = await ref.get();
+          if (atual.exists && !atual.data().imagem) {
+            await ref.update({ imagem });
+            backfilled++;
+          }
         }
       }
     }
   }
 
-  console.log(`${novas.length} notícia(s) nova(s) encontrada(s).`);
+  console.log(`${novas.length} notícia(s) nova(s) encontrada(s). ${backfilled} imagem(ns) preenchida(s) retroativamente.`);
 
   await inscreverTokensPendentes(db);
 
