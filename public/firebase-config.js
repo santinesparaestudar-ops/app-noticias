@@ -11,4 +11,4 @@ export const firebaseConfig = {
 
 // Console > Configurações do projeto > Cloud Messaging > aba "Configuração da Web"
 // > "Certificados push da Web" > gerar par de chaves > cole a chave pública aqui
-export const vapidKey = "BALsuAuPuOLj1QIvTmqfWW98wbAQonrl-D-kQC6jx7CCUcYckBGxEXcwa6GAPcAES3hrLjpu5LuCt3vAG9_pEhQ";
+export const vapidKey = "BALsuAuPu0Lj1QIvTmqfWW98wbAQonrl-D-kQC6jx7CCUcYckBGxEXcwa6GAPcAES3hrLjpu5LuCt3vAG9_pEhQ";
