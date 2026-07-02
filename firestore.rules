@@ -9,11 +9,12 @@ service cloud.firestore {
       allow write: if false;
     }
 
-    // Qualquer visitante pode se cadastrar para notificações (criar 1 token),
-    // mas ninguém pode ler, alterar ou apagar tokens de outras pessoas pelo app.
+    // Qualquer visitante pode se cadastrar para notificações (criar/reativar seu próprio token,
+    // já que o mesmo dispositivo pode reenviar o mesmo token em visitas futuras),
+    // mas ninguém pode ler ou apagar tokens de outras pessoas pelo app.
     match /push_tokens/{tokenId} {
-      allow create: if true;
-      allow read, update, delete: if false;
+      allow create, update: if true;
+      allow read, delete: if false;
     }
   }
 }
