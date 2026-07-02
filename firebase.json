@@ -5,7 +5,18 @@
     "headers": [
       {
         "source": "/firebase-messaging-sw.js",
-        "headers": [{ "key": "Service-Worker-Allowed", "value": "/" }]
+        "headers": [
+          { "key": "Service-Worker-Allowed", "value": "/" },
+          { "key": "Cache-Control", "value": "no-cache" }
+        ]
+      },
+      {
+        "source": "/firebase-config.js",
+        "headers": [{ "key": "Cache-Control", "value": "no-cache" }]
+      },
+      {
+        "source": "/firebase-config-sw.js",
+        "headers": [{ "key": "Cache-Control", "value": "no-cache" }]
       }
     ]
   },
