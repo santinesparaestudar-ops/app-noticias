@@ -82,7 +82,7 @@ async function ativarNotificacoes() {
     btnNotificar.disabled = true;
   } catch (err) {
     console.error('Erro ao ativar notificações:', err);
-    alert('Erro ao ativar notificações. Veja o console do navegador.');
+    alert(`Erro ao ativar notificações:\n${err.code || ''} ${err.message || err}`);
   }
 }
 
