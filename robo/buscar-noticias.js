@@ -130,6 +130,7 @@ async function enviarNotificacao(novas) {
   await admin.messaging().send({
     topic: 'noticias',
     notification: { title: titulo, body: corpo },
+    data: { count: String(novas.length) },
     webpush: { fcmOptions: { link: '/' } },
   });
 

@@ -88,3 +88,18 @@ async function ativarNotificacoes() {
 }
 
 btnNotificar.addEventListener('click', ativarNotificacoes);
+
+if ('clearAppBadge' in navigator) {
+  navigator.clearAppBadge().catch(() => {});
+}
+zerarContadorBadge();
+
+function zerarContadorBadge() {
+  const req = indexedDB.open('noticias-badge', 1);
+  req.onupgradeneeded = () => req.result.createObjectStore('contagem');
+  req.onsuccess = () => {
+    const db2 = req.result;
+    const tx = db2.transaction('contagem', 'readwrite');
+    tx.objectStore('contagem').put(0, 'total');
+  };
+}
